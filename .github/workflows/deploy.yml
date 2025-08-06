@@ -56,8 +56,10 @@ jobs:
               sed -i "s#src=\"\([^\"]*\)\"#src=\"$CDN_BASE/\1\"#g" "$HTML_FILE"
               echo "Replaced links in: $HTML_FILE"
           done
-          sed -i "s#\./sw.js#$CDN_BASE/sw.js#g" "registerSW.js"
-          sed -i "s#\"assets#\"$CDN_BASE/assets#g" "sw.js"
+          ls
+          pwd
+          sed -i "s#\./sw.js#$CDN_BASE/sw.js#g" "public/registerSW.js"
+          sed -i "s#\"assets#\"$CDN_BASE/assets#g" "public/sw.js"
       
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
