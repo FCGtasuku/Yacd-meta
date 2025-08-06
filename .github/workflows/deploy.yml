@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # --- START: 添加以下权限设置 ---
+    permissions:
+      contents: read # 允许 checkout 代码
+      pages: write   # 允许部署到 GitHub Pages
+      id-token: write # 允许 actions/deploy-pages 访问 OIDC token
+    # --- END: 添加权限设置 ---
+    steps:
+      - name: Checkout Dashboard code
+        uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - name: Setup Nodejs
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: pnpm
+      - name: Install package and build
+        run: |
+          pnpm install --no-frozen-lockfile
+          pnpm build
+      # --- START: 替换原有的 Deploy 步骤 ---
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public' # 指定你的构建产物所在的目录
+
+      - name: Deploy to GitHub Pages
+        id: deployment # 为后续步骤（如获取页面URL）提供ID，此处非必须但推荐
+        uses: actions/deploy-pages@v4
+        # 当使用 actions/deploy-pages@v4 时，不再需要 target_branch, build_dir, fqdn, GITHUB_TOKEN
+        # 因为它会部署 upload-pages-artifact 上传的产物，且权限由 job 级别的 permissions 控制
+      # --- END: 替换后的 Deploy 步骤 ---
