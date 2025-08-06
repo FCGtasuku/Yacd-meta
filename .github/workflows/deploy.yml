@@ -49,16 +49,16 @@ jobs:
 
           # 遍历 public 目录下的所有 HTML 文件
           find public -name "*.html" | while read HTML_FILE; do
-              # 替换 CSS 文件链接
-              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.css\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
-              
-              # 替换 JS 文件链接
-              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.js\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
+          # 替换 CSS 文件链接
+          sed -i 's#assets/\([a-zA-Z0-9\._-]*\.css\)#https://cdn.jsdmirror.com/gh/${{ github.repository }}@${{ github.sha }}/public/assets/\1#g' "$HTML_FILE"
+          
+          # 替换 JS 文件链接
+          sed -i 's#assets/\([a-zA-Z0-9\._-]*\.js\)#https://cdn.jsdmirror.com/gh/${{ github.repository }}@${{ github.sha }}/public/assets/\1#g' "$HTML_FILE"
 
-              # 替换 PNG 文件链接
-              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.png\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
-              
-              echo "Replaced links in: $HTML_FILE"
+          # 替换 PNG 文件链接
+          sed -i 's#assets/\([a-zA-Z0-9\._-]*\.png\)#https://cdn.jsdmirror.com/gh/${{ github.repository }}@${{ github.sha }}/public/assets/\1#g' "$HTML_FILE"
+          
+          echo "Replaced links in: $HTML_FILE"
           done
       
       - name: Upload Pages Artifact
