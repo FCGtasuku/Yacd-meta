@@ -44,12 +44,12 @@ jobs:
           # ----------------------------------------------------
 
           # 获取仓库名和分支名
-          REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)
+          # REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)
           BRANCH_NAME=$(echo ${{ github.ref_name }} | tr '/' '-')
 
           # 遍历 public 目录下的所有 HTML 文件
           find public -name "*.html" | while read HTML_FILE; do
-              CDN_BASE="https://cdn.jsdmirror.com/gh/$REPO_NAME@$BRANCH_NAME"
+              CDN_BASE="https://cdn.jsdmirror.com/gh/${{ github.repository }}@$BRANCH_NAME"
 
               sed -i "s#\.\/##g" "$HTML_FILE"
               sed -i "s#href=\"\([^\"]*\)\"#href=\"$CDN_BASE/\1\"#g" "$HTML_FILE"
