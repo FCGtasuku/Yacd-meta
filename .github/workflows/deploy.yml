@@ -1,42 +1,71 @@
-name: Deploy
+name: Deploy with jsDelivr
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # --- START: 添加以下权限设置 ---
     permissions:
-      contents: read # 允许 checkout 代码
-      pages: write   # 允许部署到 GitHub Pages
-      id-token: write # 允许 actions/deploy-pages 访问 OIDC token
-    # --- END: 添加权限设置 ---
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
-      - name: Checkout Dashboard code
-        uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
           version: latest
-      - name: Setup Nodejs
-        uses: actions/setup-node@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
-          cache: pnpm
-      - name: Install package and build
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies and build
         run: |
           pnpm install --no-frozen-lockfile
           pnpm build
-      # --- START: 替换原有的 Deploy 步骤 ---
+
+      - name: Replace static assets URL
+        run: |
+          # ----------------------------------------------------
+          # 脚本说明
+          # 1. 确保你的构建产物位于 'public' 目录
+          # 2. 如果你的项目结构或文件名不同，需要修改这个脚本
+          # 3. 这个脚本会替换 public/*.html 文件中的链接
+          # ----------------------------------------------------
+
+          # 获取仓库名和分支名
+          REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)
+          BRANCH_NAME=$(echo ${{ github.ref_name }} | tr '/' '-')
+
+          # 遍历 public 目录下的所有 HTML 文件
+          find public -name "*.html" | while read HTML_FILE; do
+              # 替换 CSS 文件链接
+              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.css\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
+              
+              # 替换 JS 文件链接
+              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.js\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
+
+              # 替换 PNG 文件链接
+              sed -i 's/\/assets\/\([a-zA-Z0-9\._-]*\.png\)/https:\/\/cdn.jsdmirror.com\/gh\/${{ github.repository }}@${{ github.sha }}\/public\/assets\/\1/g' $HTML_FILE
+              
+              echo "Replaced links in: $HTML_FILE"
+          done
+      
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './public' # 指定你的构建产物所在的目录
+          path: './public'
 
       - name: Deploy to GitHub Pages
-        id: deployment # 为后续步骤（如获取页面URL）提供ID，此处非必须但推荐
+        id: deployment
         uses: actions/deploy-pages@v4
-        # 当使用 actions/deploy-pages@v4 时，不再需要 target_branch, build_dir, fqdn, GITHUB_TOKEN
-        # 因为它会部署 upload-pages-artifact 上传的产物，且权限由 job 级别的 permissions 控制
-      # --- END: 替换后的 Deploy 步骤 ---
