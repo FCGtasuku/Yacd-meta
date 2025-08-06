@@ -1,6 +1,8 @@
 name: Deploy
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,6 +27,6 @@ jobs:
         with:
           target_branch: gh-pages
           build_dir: public
-          fqdn: yacd.metacubex.one
+          # fqdn: yacd.metacubex.one
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
